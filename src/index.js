@@ -2,10 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import notgeldRouter from './routes/notgeld.js';
+import uploadRouter from './routes/upload.js';
+
+
 
 dotenv.config();
 const app = express();
 
+app.use('/upload', uploadRouter);
 app.use(cors());
 app.use(express.json());
 
