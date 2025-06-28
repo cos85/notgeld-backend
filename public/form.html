@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Inserisci Notgeld</title>
+</head>
+<body>
+  <h1>Nuovo Notgeld</h1>
+
+  <form id="notgeldForm">
+    <label>Città: <input type="text" name="citta" required></label><br><br>
+    <label>Issue: <input type="text" name="issue"></label><br><br>
+    <label>Valore: <input type="number" step="0.01" name="valore"></label><br><br>
+
+    <label>Valuta:
+      <select name="valuta">
+        <option value="Pfenning">Pfenning</option>
+        <option value="Mark">Mark</option>
+        <option value="Golden_mark">Golden mark</option>
+      </select>
+    </label><br><br>
+
+    <label>Catalogo:
+      <select name="catalogo">
+        <option value="Grabowski_Mehl">Grabowski/Mehl</option>
+        <option value="Grabowski">Grabowski</option>
+        <option value="Tieste">Tieste</option>
+        <option value="Geiger">Geiger</option>
+        <option value="Altro">Altro</option>
+      </select>
+    </label><br><br>
+
+    <label>Codice catalogo: <input type="text" name="codice_catalogo"></label><br><br>
+    <label>Immagine fronte: <input type="file" id="fronteFile" required></label><br><br>
+    <label>Immagine retro: <input type="file" id="retroFile"></label><br><br>
+    <label>Note: <textarea name="note"></textarea></label><br><br>
+
+    <button type="submit">Salva</button>
+  </form>
+
+  <div id="esito"></div>
+
+  <script>
+    const form = document.getElementById('notgeldForm');
+    const esito = document.getElementById('esito');
+
+    const uploadImage = async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      return data.url;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      esito.textContent = 'Caricamento...';
+
+      const fronteFile = document.getElementById('fronteFile').files[0];
+      const retroFile = document.getElementById('retroFile').files[0];
+
+      try {
+        const url_fronte = await uploadImage(fronteFile);
+        let url_retro = null;
+
+        if (retroFile) {
+          url_retro = await uploadImage(retroFile);
+        }
+
+        const formData = new FormData(form);
+        const payload = {};
+
+        formData.forEach((value, key) => {
+          if (key !== 'fronteFile' && key !== 'retroFile') {
+            payload[key] = value;
+          }
+        });
+
+        payload.url_fronte = url_fronte;
+        if (url_retro) payload.url_retro = url_retro;
+
+        const res = await fetch('/notgeld', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+          esito.innerHTML = `<p>✅ Notgeld salvato! ID: ${result.id}</p>`;
+          form.reset();
+        } else {
+          esito.innerHTML = `<p>❌ Errore: ${result.error}</p>`;
+        }
+      } catch (err) {
+        esito.innerHTML = `<p>❌ Errore: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
