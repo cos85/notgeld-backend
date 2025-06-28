@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Dettaglio Notgeld</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+    img { max-height: 200px; margin: 10px 0; display: block; }
+  </style>
+</head>
+<body>
+  <a href="index.html">← Torna alla lista</a>
+  <h1 id="titolo">Notgeld</h1>
+  <div id="contenuto">Caricamento...</div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    async function caricaDettaglio() {
+      const res = await fetch('/notgeld/' + id);
+      const data = await res.json();
+
+      document.getElementById('titolo').textContent = data.citta;
+
+      const div = document.getElementById('contenuto');
+      div.innerHTML = `
+        <p><strong>Catalogo:</strong> ${data.catalogo || ''} ${data.codice_catalogo || ''}</p>
+        <p><strong>Valore:</strong> ${data.valore || ''} ${data.valuta || ''}</p>
+        <p><strong>Note:</strong> ${data.note || ''}</p>
+        ${data.url_fronte ? `<img src="${data.url_fronte}" alt="fronte">` : ''}
+        ${data.url_retro ? `<img src="${data.url_retro}" alt="retro">` : ''}
+      `;
+    }
+
+    caricaDettaglio();
+  </script>
+</body>
+</html>

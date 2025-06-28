@@ -75,4 +75,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// API: dettaglio notgeld per ID
+router.get('/:id', async (req, res) => {
+  try {
+    const notgeld = await prisma.notgeld.findUnique({
+      where: { id: req.params.id }
+    });
+
+    if (!notgeld) return res.status(404).json({ error: 'Notgeld non trovato' });
+
+    res.json(notgeld);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Errore nel recupero del dettaglio' });
+  }
+});
+
+
 export default router;

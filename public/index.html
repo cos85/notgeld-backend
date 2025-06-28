@@ -121,7 +121,7 @@
       lista.forEach(n => {
         const div = document.createElement('div');
         div.className = 'notgeld';
-        div.textContent = n.citta;
+        div.innerHTML = `<a href="dettaglio.html?id=${n.id}">${n.citta}</a>`;
         gruppo.appendChild(div);
       });
 
