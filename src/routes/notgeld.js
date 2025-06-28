@@ -4,19 +4,7 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.get('/', async (req, res) => {
-  try {
-    const lista = await prisma.notgeld.findMany({
-      orderBy: { created_at: 'desc' }
-    });
-    res.json(lista);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante il recupero dei notgeld' });
-  }
-});
-
-
+// API: crea un notgeld
 router.post('/', async (req, res) => {
   try {
     const data = req.body;
@@ -50,38 +38,41 @@ router.post('/', async (req, res) => {
 
 // API: lettere iniziali presenti
 router.get('/lettere', async (req, res) => {
-  const lettere = await prisma.notgeld.findMany({
-    select: {
-      citta: true
-    }
-  });
+  try {
+    const lettere = await prisma.notgeld.findMany({
+      select: { citta: true }
+    });
 
-  const iniziali = [...new Set(lettere.map(n => n.citta[0].toUpperCase()))];
-  res.json(iniziali.sort());
+    const iniziali = [...new Set(lettere.map(n => n.citta?.[0]?.toUpperCase()).filter(Boolean))];
+    res.json(iniziali.sort());
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Errore durante il recupero delle lettere iniziali' });
+  }
 });
 
-// API: notgeld filtrati per iniziale
+// API: elenco notgeld (opzionalmente filtrato per iniziale)
 router.get('/', async (req, res) => {
-  const { iniziale } = req.query;
+  try {
+    const { iniziale } = req.query;
 
-  if (iniziale) {
     const lista = await prisma.notgeld.findMany({
-      where: {
-        citta: {
-          startsWith: iniziale,
-          mode: 'insensitive'
-        }
-      },
-      orderBy: { citta: 'asc' }
+      where: iniziale
+        ? {
+            citta: {
+              startsWith: iniziale,
+              mode: 'insensitive'
+            }
+          }
+        : undefined,
+      orderBy: iniziale ? { citta: 'asc' } : { created_at: 'desc' }
     });
-    return res.json(lista);
-  }
 
-  // fallback: tutti
-  const lista = await prisma.notgeld.findMany({
-    orderBy: { created_at: 'desc' }
-  });
-  res.json(lista);
+    res.json(lista);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Errore durante il recupero dei notgeld' });
+  }
 });
 
 export default router;
