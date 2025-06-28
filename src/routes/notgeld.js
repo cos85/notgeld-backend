@@ -4,6 +4,19 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+router.get('/', async (req, res) => {
+  try {
+    const lista = await prisma.notgeld.findMany({
+      orderBy: { created_at: 'desc' }
+    });
+    res.json(lista);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Errore durante il recupero dei notgeld' });
+  }
+});
+
+
 router.post('/', async (req, res) => {
   try {
     const data = req.body;
