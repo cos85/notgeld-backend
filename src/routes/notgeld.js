@@ -48,4 +48,40 @@ router.post('/', async (req, res) => {
   }
 });
 
+// API: lettere iniziali presenti
+router.get('/lettere', async (req, res) => {
+  const lettere = await prisma.notgeld.findMany({
+    select: {
+      citta: true
+    }
+  });
+
+  const iniziali = [...new Set(lettere.map(n => n.citta[0].toUpperCase()))];
+  res.json(iniziali.sort());
+});
+
+// API: notgeld filtrati per iniziale
+router.get('/', async (req, res) => {
+  const { iniziale } = req.query;
+
+  if (iniziale) {
+    const lista = await prisma.notgeld.findMany({
+      where: {
+        citta: {
+          startsWith: iniziale,
+          mode: 'insensitive'
+        }
+      },
+      orderBy: { citta: 'asc' }
+    });
+    return res.json(lista);
+  }
+
+  // fallback: tutti
+  const lista = await prisma.notgeld.findMany({
+    orderBy: { created_at: 'desc' }
+  });
+  res.json(lista);
+});
+
 export default router;

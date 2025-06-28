@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Collezione Notgeld</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: auto; text-align: center; }
+    .lettere button { margin: 3px; padding: 5px 10px; }
+    .disabilitata { background-color: #eee; color: #aaa; cursor: default; }
+    .attiva { background-color: #ddd; border: 2px solid black; }
+    .gruppo { text-align: left; margin-top: 20px; }
+    .notgeld { border: 1px solid #ccc; padding: 5px; margin: 5px 0; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Collezione Notgeld</h1>
+  <a href="/form.html">Carica</a>
+
+  <div class="lettere" id="lettere"></div>
+  <div class="gruppo" id="risultati"></div>
+
+  <script>
+    const lettere = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const lettereContainer = document.getElementById('lettere');
+    const risultati = document.getElementById('risultati');
+
+    let attiva = null;
+
+    async function caricaLetterePresenti() {
+      const res = await fetch('/notgeld/lettere');
+      const presenti = await res.json(); // es: ["B", "P"]
+
+      lettere.forEach(l => {
+        const btn = document.createElement('button');
+        btn.textContent = l;
+        if (!presenti.includes(l)) {
+          btn.disabled = true;
+          btn.classList.add('disabilitata');
+        } else {
+          btn.onclick = () => selezionaLettera(l, btn);
+        }
+        lettereContainer.appendChild(btn);
+      });
+    }
+
+    async function selezionaLettera(lettera, bottone) {
+      document.querySelectorAll('.lettere button').forEach(b => b.classList.remove('attiva'));
+      bottone.classList.add('attiva');
+      attiva = lettera;
+
+      const res = await fetch(`/notgeld?iniziale=${lettera}`);
+      const lista = await res.json();
+
+      risultati.innerHTML = '';
+      const gruppo = document.createElement('div');
+      gruppo.innerHTML = `<h2>${lettera}</h2>`;
+
+      lista.forEach(n => {
+        const div = document.createElement('div');
+        div.className = 'notgeld';
+        div.textContent = n.citta;
+        gruppo.appendChild(div);
+      });
+
+      risultati.appendChild(gruppo);
+    }
+
+    caricaLetterePresenti();
+  </script>
+</body>
+</html>
