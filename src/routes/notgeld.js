@@ -52,28 +52,32 @@ router.get('/lettere', async (req, res) => {
 });
 
 // API: elenco notgeld (opzionalmente filtrato per iniziale)
+// API: lista città uniche per iniziale
 router.get('/', async (req, res) => {
-  try {
-    const { iniziale } = req.query;
+  const { iniziale } = req.query;
 
-    const lista = await prisma.notgeld.findMany({
-      where: iniziale
-        ? {
-            citta: {
-              startsWith: iniziale,
-              mode: 'insensitive'
-            }
-          }
-        : undefined,
-      orderBy: iniziale ? { citta: 'asc' } : { created_at: 'desc' }
+  if (iniziale) {
+    const risultati = await prisma.notgeld.findMany({
+      where: {
+        citta: {
+          startsWith: iniziale,
+          mode: 'insensitive'
+        }
+      },
+      select: { citta: true },
+      orderBy: { citta: 'asc' }
     });
 
-    res.json(lista);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Errore durante il recupero dei notgeld' });
+    const uniche = [...new Set(risultati.map(n => n.citta))];
+    return res.json(uniche);
   }
+
+  const lista = await prisma.notgeld.findMany({
+    orderBy: { created_at: 'desc' }
+  });
+  res.json(lista);
 });
+
 
 // API: dettaglio notgeld per ID
 router.get('/:id', async (req, res) => {
@@ -88,6 +92,26 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Errore nel recupero del dettaglio' });
+  }
+});
+
+// API: tutti i notgeld di una città
+router.get('/citta/:nome', async (req, res) => {
+  try {
+    const lista = await prisma.notgeld.findMany({
+      where: {
+        citta: {
+          equals: req.params.nome,
+          mode: 'insensitive'
+        }
+      },
+      orderBy: { created_at: 'asc' }
+    });
+
+    res.json(lista);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Errore durante il recupero dei notgeld della città' });
   }
 });
 

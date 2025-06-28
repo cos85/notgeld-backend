@@ -2,10 +2,21 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Dettaglio Notgeld</title>
+  <title>Notgeld per città</title>
   <style>
     body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
-    img { max-height: 200px; margin: 10px 0; display: block; }
+    .scheda {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #fafafa;
+    }
+    img {
+      max-height: 120px;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -15,25 +26,33 @@
 
   <script>
     const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
+    const citta = params.get('citta');
 
-    async function caricaDettaglio() {
-      const res = await fetch('/notgeld/' + id);
-      const data = await res.json();
+    async function caricaNotgeld() {
+      const res = await fetch('/notgeld/citta/' + encodeURIComponent(citta));
+      const dati = await res.json();
 
-      document.getElementById('titolo').textContent = data.citta;
+      document.getElementById('titolo').textContent = `Notgeld di ${citta}`;
+      const contenuto = document.getElementById('contenuto');
+      contenuto.innerHTML = '';
 
-      const div = document.getElementById('contenuto');
-      div.innerHTML = `
-        <p><strong>Catalogo:</strong> ${data.catalogo || ''} ${data.codice_catalogo || ''}</p>
-        <p><strong>Valore:</strong> ${data.valore || ''} ${data.valuta || ''}</p>
-        <p><strong>Note:</strong> ${data.note || ''}</p>
-        ${data.url_fronte ? `<img src="${data.url_fronte}" alt="fronte">` : ''}
-        ${data.url_retro ? `<img src="${data.url_retro}" alt="retro">` : ''}
-      `;
+      dati.forEach(n => {
+        const div = document.createElement('div');
+        div.className = 'scheda';
+
+        div.innerHTML = `
+          <p><strong>Valore:</strong> ${n.valore || ''} ${n.valuta || ''}</p>
+          <p><strong>Catalogo:</strong> ${n.catalogo || ''} ${n.codice_catalogo || ''}</p>
+          <p><strong>Note:</strong> ${n.note || ''}</p>
+          ${n.url_fronte ? `<img src="${n.url_fronte}" alt="fronte">` : ''}
+          ${n.url_retro ? `<img src="${n.url_retro}" alt="retro">` : ''}
+        `;
+
+        contenuto.appendChild(div);
+      });
     }
 
-    caricaDettaglio();
+    caricaNotgeld();
   </script>
 </body>
 </html>
