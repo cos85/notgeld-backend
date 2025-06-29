@@ -10,7 +10,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/', upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
-    const filename = `${randomUUID()}_${file.originalname}`;
+    const sanitizedOriginal = file.originalname.replace(/\s+/g, '_');
+    const filename = `${randomUUID()}_${sanitizedOriginal}`;
+
     const bucket = process.env.R2_BUCKET;
 
     const uploadParams = {
