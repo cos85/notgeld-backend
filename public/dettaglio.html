@@ -4,18 +4,30 @@
   <meta charset="UTF-8">
   <title>Notgeld per città</title>
   <style>
-    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
     .scheda {
       border: 1px solid #ccc;
       border-radius: 5px;
-      margin: 15px 0;
-      padding: 10px;
+      margin: 20px 0;
+      padding: 15px;
       background-color: #fafafa;
     }
-    img {
+    .immagini {
+      margin-top: 10px;
+    }
+    .immagini img {
       max-height: 120px;
       margin-right: 10px;
-      vertical-align: middle;
+      border: 1px solid #999;
+      border-radius: 3px;
+    }
+    .etichetta {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -41,11 +53,15 @@
         div.className = 'scheda';
 
         div.innerHTML = `
-          <p><strong>Valore:</strong> ${n.valore || ''} ${n.valuta || ''}</p>
-          <p><strong>Catalogo:</strong> ${n.catalogo || ''} ${n.codice_catalogo || ''}</p>
-          <p><strong>Note:</strong> ${n.note || ''}</p>
-          ${n.url_fronte ? `<img src="${n.url_fronte}" alt="fronte">` : ''}
-          ${n.url_retro ? `<img src="${n.url_retro}" alt="retro">` : ''}
+          <p><span class="etichetta">Città:</span> ${n.citta}</p>
+          <p><span class="etichetta">Issue:</span> ${n.issue || '—'}</p>
+          <p><span class="etichetta">Valore:</span> ${n.valore || ''} ${n.valuta || ''}</p>
+          <p><span class="etichetta">Catalogo:</span> ${n.catalogo || ''} ${n.codice_catalogo || ''}</p>
+          <p><span class="etichetta">Note:</span> ${n.note || '—'}</p>
+          <div class="immagini">
+            ${n.url_fronte ? `<img src="${n.url_fronte}" alt="fronte">` : ''}
+            ${n.url_retro ? `<img src="${n.url_retro}" alt="retro">` : ''}
+          </div>
         `;
 
         contenuto.appendChild(div);
