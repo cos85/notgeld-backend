@@ -39,37 +39,21 @@
   </form>
 
   <div id="esito"></div>
-  <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 
   <script>
     const form = document.getElementById('notgeldForm');
     const esito = document.getElementById('esito');
 
-   const uploadImage = async (file) => {
-  const options = {
-    maxWidthOrHeight: 1024,  // ridimensiona se più grande
-    maxSizeMB: 0.4,          // massimo 400 KB
-    useWebWorker: true,
-  };
-
-  try {
-    const compressed = await imageCompression(file, options);
+    const uploadImage = async (file) => {
     const formData = new FormData();
-    formData.append('file', compressed);
-
+    formData.append('file', file);
     const res = await fetch('/upload', {
       method: 'POST',
       body: formData
     });
-
     const data = await res.json();
-    return data.filename;
-  } catch (err) {
-    console.error('Errore durante la compressione o l\'upload:', err);
-    alert('Errore durante il caricamento dell\'immagine');
-  }
-};
-
+    return data.filename; // 👈 ora usiamo solo il filename
+    };
 
 
     form.addEventListener('submit', async (e) => {
