@@ -10,7 +10,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/', upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
-    const sanitizedOriginal = file.originalname.replace(/\s+/g, '_');
+    const sanitizedOriginal = file.originalname
+      .replace(/\s+/g, '_')            // spazi → _
+      .replace(/[^a-zA-Z0-9_.-]/g, ''); // rimuove caratteri strani
+
     const filename = `${randomUUID()}_${sanitizedOriginal}`;
 
     const bucket = process.env.R2_BUCKET;
