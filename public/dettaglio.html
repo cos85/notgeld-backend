@@ -3,33 +3,80 @@
 <head>
   <meta charset="UTF-8">
   <title>Notgeld per città</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-    }
-    .scheda {
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin: 20px 0;
-      padding: 15px;
-      background-color: #fafafa;
-    }
-    .immagini {
-      margin-top: 10px;
-    }
-    .immagini img {
-      max-height: 120px;
-      margin-right: 10px;
-      border: 1px solid #999;
-      border-radius: 3px;
-    }
-    .etichetta {
-      font-weight: bold;
-    }
-  </style>
+ <style>
+  body {
+    font-family: sans-serif;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+  }
+
+  .scheda {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #fafafa;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .testo {
+    flex: 1;
+  }
+
+  .immagini {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+
+  .immagini img {
+    max-height: 120px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .etichetta {
+    font-weight: bold;
+  }
+
+  /* Overlay immagine */
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .overlay img {
+    max-width: 90%;
+    max-height: 90%;
+    border: 4px solid white;
+    border-radius: 5px;
+  }
+
+  .overlay .chiudi {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 32px;
+    color: white;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+</style>
+
 </head>
 <body>
   <a href="index.html">← Torna alla lista</a>
@@ -39,6 +86,15 @@
   <script>
     const params = new URLSearchParams(window.location.search);
     const citta = params.get('citta');
+    function mostraOverlay(src) {
+      document.getElementById('overlayImg').src = src;
+      document.getElementById('overlay').style.display = 'flex';
+    }
+    
+    function chiudiOverlay() {
+      document.getElementById('overlay').style.display = 'none';
+      document.getElementById('overlayImg').src = '';
+    }
 
     async function caricaNotgeld() {
       const res = await fetch('/notgeld/citta/' + encodeURIComponent(citta));
@@ -52,19 +108,20 @@
         const div = document.createElement('div');
         div.className = 'scheda';
 
-        div.innerHTML = `
+       div.innerHTML = `
+        <div class="testo">
           <p><span class="etichetta">Città:</span> ${n.citta}</p>
           <p><span class="etichetta">Issue:</span> ${n.issue || '—'}</p>
           <p><span class="etichetta">Valore:</span> ${n.valore || ''} ${n.valuta || ''}</p>
           <p><span class="etichetta">Catalogo:</span> ${n.catalogo || ''} ${n.codice_catalogo || ''}</p>
           <p><span class="etichetta">Note:</span> ${n.note || '—'}</p>
-          <div class="immagini">
-            ${n.url_fronte ? `<img src="/immagine/${n.url_fronte}" alt="fronte" title="Fronte">` : ''}
-            ${n.url_retro ? `<img src="/immagine/${n.url_retro}" alt="retro" title="Retro">` : ''}
-          </div>
+        </div>
+        <div class="immagini">
+          ${n.url_fronte ? `<img src="/immagine/${n.url_fronte}" alt="fronte" title="Fronte" onclick="mostraOverlay(this.src)">` : ''}
+          ${n.url_retro ? `<img src="/immagine/${n.url_retro}" alt="retro" title="Retro" onclick="mostraOverlay(this.src)">` : ''}
+        </div>
+      `;
 
-
-        `;
 
         contenuto.appendChild(div);
       });
@@ -72,5 +129,10 @@
 
     caricaNotgeld();
   </script>
+  <div id="overlay" class="overlay">
+  <button class="chiudi" onclick="chiudiOverlay()">✕</button>
+  <img id="overlayImg" src="" alt="Ingrandimento">
+</div>
+
 </body>
 </html>
