@@ -59,9 +59,10 @@
           <p><span class="etichetta">Catalogo:</span> ${n.catalogo || ''} ${n.codice_catalogo || ''}</p>
           <p><span class="etichetta">Note:</span> ${n.note || '—'}</p>
           <div class="immagini">
-            ${n.url_fronte ? `<img src="${n.url_fronte}" alt="fronte">` : ''}
-            ${n.url_retro ? `<img src="${n.url_retro}" alt="retro">` : ''}
+            ${n.url_fronte ? `<img src="${n.url_fronte}" alt="fronte" title="Fronte">` : ''}
+            ${n.url_retro ? `<img src="${n.url_retro}" alt="retro" title="Retro">` : ''}
           </div>
+
         `;
 
         contenuto.appendChild(div);
