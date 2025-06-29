@@ -28,7 +28,7 @@ router.post('/', upload.single('file'), async (req, res) => {
     await r2Client.send(new PutObjectCommand(uploadParams));
 
     const url = `https://${process.env.R2_BUCKET}.${process.env.R2_ENDPOINT.replace(/^https?:\/\//, '')}/${filename}`;
-    res.json({ url });
+    res.json({ filename });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Errore durante upload su R2' });
