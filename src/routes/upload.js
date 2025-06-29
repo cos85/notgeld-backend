@@ -11,11 +11,10 @@ router.post('/', upload.single('file'), async (req, res) => {
   try {
     const file = req.file;
     const sanitizedOriginal = file.originalname
-      .replace(/\s+/g, '_')            // spazi → _
-      .replace(/[^a-zA-Z0-9_.-]/g, ''); // rimuove caratteri strani
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_.-]/g, '');
 
     const filename = `${randomUUID()}_${sanitizedOriginal}`;
-
     const bucket = process.env.R2_BUCKET;
 
     const uploadParams = {
@@ -27,7 +26,6 @@ router.post('/', upload.single('file'), async (req, res) => {
 
     await r2Client.send(new PutObjectCommand(uploadParams));
 
-    const url = `https://${process.env.R2_BUCKET}.${process.env.R2_ENDPOINT.replace(/^https?:\/\//, '')}/${filename}`;
     res.json({ filename });
   } catch (error) {
     console.error(error);
