@@ -45,15 +45,16 @@
     const esito = document.getElementById('esito');
 
     const uploadImage = async (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      return data.url;
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/upload', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    return data.filename; // 👈 ora usiamo solo il filename
     };
+
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -79,8 +80,9 @@
           }
         });
 
-        payload.url_fronte = url_fronte;
-        if (url_retro) payload.url_retro = url_retro;
+       payload.url_fronte = url_fronte || null;
+       payload.url_retro = url_retro || null;
+
 
         const res = await fetch('/notgeld', {
           method: 'POST',
