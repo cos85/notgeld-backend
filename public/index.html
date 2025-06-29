@@ -4,80 +4,92 @@
   <meta charset="UTF-8">
   <title>Collezione Notgeld</title>
   <style>
-  body {
-    font-family: sans-serif;
-    max-width: 800px;
-    margin: auto;
-    text-align: center;
-    padding: 20px;
-  }
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: auto;
+      text-align: center;
+      padding: 20px;
+    }
 
-  .lettere {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 20px;
-  }
+    .lettere {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
 
-  .lettere button {
-    border: 1px solid #ddd;
-    background-color: #f8f9fa;
-    color: #333;
-    font-size: 16px;
-    padding: 6px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    min-width: 32px;
-  }
+    .lettere button {
+      border: 1px solid #ddd;
+      background-color: #f8f9fa;
+      color: #333;
+      font-size: 16px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 32px;
+    }
 
-  .lettere button:hover:not(:disabled) {
-    background-color: #e2e6ea;
-  }
+    .lettere button:hover:not(:disabled) {
+      background-color: #e2e6ea;
+    }
 
-  .lettere button.attiva {
-    border: 2px solid #000;
-    background-color: #ffffff;
-  }
+    .lettere button.attiva {
+      border: 2px solid #000;
+      background-color: #ffffff;
+    }
 
-  .lettere button:disabled {
-    background-color: #f1f1f1;
-    color: #bbb;
-    cursor: not-allowed;
-  }
+    .lettere button:disabled {
+      background-color: #f1f1f1;
+      color: #bbb;
+      cursor: not-allowed;
+    }
 
-  .gruppo {
-    text-align: left;
-    margin-top: 20px;
-  }
+    .gruppo {
+      text-align: left;
+      margin-top: 20px;
+    }
 
-  .notgeld {
-    border: 1px solid #ccc;
-    padding: 8px 10px;
-    margin: 6px 0;
-    border-radius: 5px;
-    background-color: #fefefe;
-    font-size: 16px;
-  }
+    .notgeld {
+      border: 1px solid #ccc;
+      padding: 8px 10px;
+      margin: 6px 0;
+      border-radius: 5px;
+      background-color: #fefefe;
+      font-size: 16px;
+    }
 
-  a {
-    color: #673ab7;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 10px;
-    display: inline-block;
-  }
+    a {
+      color: #673ab7;
+      text-decoration: none;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
 
-  a:hover {
-    text-decoration: underline;
-  }
-</style>
+    a:hover {
+      text-decoration: underline;
+    }
 
+    .menu {
+      margin-bottom: 20px;
+    }
+
+    .menu span {
+      margin-left: 10px;
+      font-weight: normal;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
   <h1>Collezione Notgeld</h1>
-  <a href="/form.html">Carica</a>
+  <div class="menu" id="menuUtente">
+    <a href="/auth/google">Login</a>
+  </div>
 
   <div class="lettere" id="lettere"></div>
   <div class="gruppo" id="risultati"></div>
@@ -86,19 +98,31 @@
     const lettere = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const lettereContainer = document.getElementById('lettere');
     const risultati = document.getElementById('risultati');
-
+    const menuUtente = document.getElementById('menuUtente');
     let attiva = null;
+
+    async function aggiornaLogin() {
+      const res = await fetch('/auth/user');
+      const data = await res.json();
+
+      if (data.authenticated) {
+        menuUtente.innerHTML = `
+          <a href="/form.html">Carica</a>
+          <a href="/auth/logout" style="color: red;">Logout</a>
+          <span>(${data.user.displayName || data.user.email})</span>
+        `;
+      }
+    }
 
     async function caricaLetterePresenti() {
       const res = await fetch('/notgeld/lettere');
-      const presenti = await res.json(); // es: ["B", "P"]
+      const presenti = await res.json();
 
       lettere.forEach(l => {
         const btn = document.createElement('button');
         btn.textContent = l;
         if (!presenti.includes(l)) {
           btn.disabled = true;
-          btn.classList.add('disabilitata');
         } else {
           btn.onclick = () => selezionaLettera(l, btn);
         }
@@ -128,6 +152,7 @@
       risultati.appendChild(gruppo);
     }
 
+    aggiornaLogin();
     caricaLetterePresenti();
   </script>
 </body>
