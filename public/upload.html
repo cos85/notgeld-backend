@@ -1,47 +1,50 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <title>Upload immagine Notgeld</title>
-</head>
-<body>
-  <h1>Carica immagine fronte o retro</h1>
-  <form id="uploadForm">
-    <input type="file" name="file" id="fileInput" required />
-    <button type="submit">Carica</button>
-  </form>
+import express from 'express';
+import multer from 'multer';
+import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import r2Client from '../lib/r2Client.js';
+import { randomUUID } from 'crypto';
 
-  <div id="result"></div>
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
-  <script>
-    const form = document.getElementById('uploadForm');
-    const result = document.getElementById('result');
+router.post('/', upload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Sanifica il nome del file
+    const sanitizedOriginal = file.originalname
+      .replace(/\s+/g, '_')
+      .replace(/[^a-zA-Z0-9_.-]/g, '');
 
-      const file = document.getElementById('fileInput').files[0];
-      if (!file) return;
+    const filename = `${randomUUID()}_${sanitizedOriginal}`;
+    const bucket = process.env.R2_BUCKET;
 
-      const formData = new FormData();
-      formData.append('file', file);
+    // Upload su R2
+    const uploadParams = {
+      Bucket: bucket,
+      Key: filename,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    };
 
-      try {
-        const res = await fetch('/upload', {
-          method: 'POST',
-          body: formData
-        });
+    await r2Client.send(new PutObjectCommand(uploadParams));
 
-        const data = await res.json();
-        if (data.url) {
-          result.innerHTML = `<p>URL immagine: <a href="${data.url}" target="_blank">${data.url}</a></p>`;
-        } else {
-          result.textContent = 'Errore durante upload';
-        }
-      } catch (err) {
-        result.textContent = 'Errore: ' + err.message;
-      }
+    // Genera URL firmato (valido 1 ora)
+    const getObjectParams = {
+      Bucket: bucket,
+      Key: filename,
+    };
+
+    const signedUrl = await getSignedUrl(r2Client, new GetObjectCommand(getObjectParams), {
+      expiresIn: 3600, // secondi
     });
-  </script>
-</body>
-</html>
+
+    res.json({ url: signedUrl });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Errore durante upload su R2' });
+  }
+});
+
+export default router;
