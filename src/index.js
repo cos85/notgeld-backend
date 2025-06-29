@@ -5,6 +5,8 @@ import notgeldRouter from './routes/notgeld.js';
 import uploadRouter from './routes/upload.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import immagineRouter from './routes/immagine.js';
+
 
 
 
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use('/notgeld', notgeldRouter);
+app.use('/immagine', immagineRouter);
+
 
 app.get('/', (req, res) => {
   res.send('Notgeld API pronta!');
