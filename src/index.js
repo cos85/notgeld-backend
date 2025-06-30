@@ -11,7 +11,6 @@ import authRouter from './routes/auth.js';
 import ensureAuthenticated from './middleware/ensureAuthenticated.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import session from 'express-session';
 import pg from 'pg';
 import connectPgSimple from 'connect-pg-simple';
 
