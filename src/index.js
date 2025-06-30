@@ -11,9 +11,19 @@ import authRouter from './routes/auth.js';
 import ensureAuthenticated from './middleware/ensureAuthenticated.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import session from 'express-session';
+import pg from 'pg';
+import connectPgSimple from 'connect-pg-simple';
+
 
 dotenv.config();
 const app = express();
+
+const PgSession = connectPgSimple(session);
+
+const pool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,10 +47,18 @@ passport.deserializeUser((obj, done) => done(null, obj));
 
 // === MIDDLEWARE ===
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'una-frase-lunga-segreta',
+  store: new PgSession({
+    pool,
+    tableName: 'session'
+  }),
+  secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7  // 7 giorni (opzionale)
+  }
 }));
+
 
 app.use(passport.initialize());
 app.use(passport.session());
